@@ -27,6 +27,8 @@ def index():
         elif password == ADMIN_PASSWORD:
             session['admin'] = True
             return redirect(url_for('admin'))
+        else:
+            return render_template('index.html', error="That password is incorrect")
     return render_template('index.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -76,5 +78,6 @@ def complete(filename):
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
-    app.run(host='192.168.1.112', port=5000, debug=True)
+    # app.run(host='192.168.1.112', port=5000, debug=True)
+    app.run(debug=True)
 

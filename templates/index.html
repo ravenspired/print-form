@@ -7,10 +7,14 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
         form { display: inline-block; text-align: left; }
+        .error { color: red; margin-top: 10px; }
     </style>
 </head>
 <body>
     <h2>Enter Password to Proceed</h2>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
     <form method="POST">
         <label for="password">Password:</label>
         <input type="password" name="password" required>
