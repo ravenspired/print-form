@@ -6,24 +6,41 @@
     <title>Admin Panel</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        table { width: 80%; margin: auto; border-collapse: collapse; }
+        table { width: 90%; margin: auto; border-collapse: collapse; }
         th, td { border: 1px solid black; padding: 10px; text-align: center; }
+        .files-list { text-align: left; }
     </style>
 </head>
 <body>
-    <h2>Print Job Management</h2>
+    <h2>Print Job Submissions</h2>
     <table>
         <tr>
-            <th>Filename</th>
+            <th>Submission ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Location Confirmed</th>
+            <th>Emergency</th>
+            <th>Files</th>
+            <th>Timestamp</th>
             <th>Actions</th>
         </tr>
-        {% for file in files %}
+        {% for submission in submissions %}
         <tr>
-            <td>{{ file }}</td>
+            <td>{{ submission.id }}</td>
+            <td>{{ submission.name }}</td>
+            <td>{{ submission.email }}</td>
+            <td>{{ submission.location_confirmed }}</td>
+            <td>{{ "Yes" if submission.emergency else "No" }}</td>
+            <td class="files-list">
+                <ul>
+                    {% for file in submission.files %}
+                        <li><a href="{{ url_for('download', submission_id=submission.id, filename=file) }}">{{ file }}</a></li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>{{ submission.timestamp }}</td>
             <td>
-                <a href="{{ url_for('download', filename=file) }}">Download</a> |
-                <a href="{{ url_for('complete', filename=file) }}">Mark as Completed</a> |
-                <a href="{{ url_for('delete', filename=file) }}" style="color: red;">Delete</a>
+                <a href="{{ url_for('delete_submission', submission_id=submission.id) }}" style="color: red;">Delete Submission</a>
             </td>
         </tr>
         {% endfor %}
