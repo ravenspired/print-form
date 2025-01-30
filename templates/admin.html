@@ -40,7 +40,8 @@
             </td>
             <td>{{ submission.timestamp }}</td>
             <td>
-                <a href="{{ url_for('delete_submission', submission_id=submission.id) }}" style="color: red;">Delete Submission</a>
+                <a href="{{ url_for('archive_submission', submission_id=submission.id) }}" style="color: blue;">Archive</a><br>
+                <a href="{{ url_for('delete_submission', submission_id=submission.id) }}" style="color: red;">Delete</a>
             </td>
         </tr>
         {% endfor %}

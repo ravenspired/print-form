@@ -3,6 +3,7 @@ import os
 import uuid
 import json
 import datetime
+import shutil  # Import shutil for moving directories
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Change this to a strong secret key
@@ -101,15 +102,25 @@ def download(submission_id, filename):
     submission_folder = os.path.join(UPLOAD_FOLDER, submission_id)
     return send_from_directory(submission_folder, filename)
 
+@app.route('/archive_submission/<submission_id>')
+def archive_submission(submission_id):
+    if not session.get('admin'):
+        return redirect(url_for('index'))
+    submission_folder = os.path.join(UPLOAD_FOLDER, submission_id)
+    archive_folder = os.path.join(ARCHIVE_FOLDER, submission_id)
+
+    if os.path.exists(submission_folder):
+        shutil.move(submission_folder, archive_folder)
+    
+    return redirect(url_for('admin'))
+
 @app.route('/delete_submission/<submission_id>')
 def delete_submission(submission_id):
     if not session.get('admin'):
         return redirect(url_for('index'))
     submission_folder = os.path.join(UPLOAD_FOLDER, submission_id)
     if os.path.exists(submission_folder):
-        for file in os.listdir(submission_folder):
-            os.remove(os.path.join(submission_folder, file))
-        os.rmdir(submission_folder)
+        shutil.rmtree(submission_folder)
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
