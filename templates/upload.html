@@ -7,11 +7,13 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
         form { display: inline-block; text-align: left; }
+        #progress-container { display: none; margin-top: 10px; width: 100%; }
+        #progress-bar { width: 0%; height: 20px; background: green; }
     </style>
 </head>
 <body>
     <h2>Submit Your Print Job</h2>
-    <form method="POST" enctype="multipart/form-data">
+    <form id="upload-form" enctype="multipart/form-data">
         <label for="name">Name:</label>
         <input type="text" name="name" required><br><br>
 
@@ -35,5 +37,45 @@
 
         <button type="submit">Submit</button>
     </form>
+
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+    <p id="upload-status"></p>
+
+    <script>
+        document.getElementById("upload-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            let formData = new FormData(this);
+            let xhr = new XMLHttpRequest();
+
+            xhr.open("POST", "/upload", true);
+
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                    let percentComplete = (event.loaded / event.total) * 100;
+                    document.getElementById("progress-bar").style.width = percentComplete + "%";
+                    document.getElementById("progress-container").style.display = "block";
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status == 200) {
+                    document.getElementById("upload-status").innerText = "Upload successful!";
+                } else {
+                    document.getElementById("upload-status").innerText = "Upload failed!";
+                }
+                document.getElementById("progress-container").style.display = "none";
+            };
+
+            xhr.onerror = function() {
+                document.getElementById("upload-status").innerText = "Upload error!";
+                document.getElementById("progress-container").style.display = "none";
+            };
+
+            xhr.send(formData);
+        });
+    </script>
 </body>
 </html>

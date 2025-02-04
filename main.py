@@ -3,7 +3,7 @@ import os
 import uuid
 import json
 import datetime
-import shutil  # Import shutil for moving directories
+import shutil
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Change this to a strong secret key
@@ -13,6 +13,7 @@ ARCHIVE_FOLDER = 'archives'
 PASSWORD = 'userpassword'  # Change this to the shared password
 ADMIN_PASSWORD = 'adminpassword'  # Change this to the admin password
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB limit
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(ARCHIVE_FOLDER, exist_ok=True)
@@ -40,15 +41,10 @@ def upload():
         return redirect(url_for('index'))
     
     if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        location_confirmed = request.form.get('location_confirmed')
-        location_details = request.form.get('location_details')
-        emergency = request.form.get('emergency') == 'on'
         files = request.files.getlist('files')
         
         if not files or all(file.filename == '' for file in files):
-            return "No valid files uploaded!"
+            return jsonify({"error": "No valid files uploaded!"})
         
         submission_id = str(uuid.uuid4())
         submission_folder = os.path.join(UPLOAD_FOLDER, submission_id)
@@ -58,6 +54,8 @@ def upload():
         
         for file in files:
             if file and allowed_file(file.filename):
+                if file.content_length > MAX_FILE_SIZE:
+                    return jsonify({"error": "File exceeds maximum size of 10MB!"})
                 filename = file.filename
                 filepath = os.path.join(submission_folder, filename)
                 file.save(filepath)
@@ -65,11 +63,6 @@ def upload():
         
         submission = {
             "id": submission_id,
-            "name": name,
-            "email": email,
-            "location_confirmed": location_confirmed,
-            "location_details": location_details,
-            "emergency": emergency,
             "files": saved_files,
             "timestamp": timestamp
         }
@@ -77,9 +70,13 @@ def upload():
         with open(os.path.join(submission_folder, 'submission.json'), 'w') as f:
             json.dump(submission, f, indent=4)
         
-        return "Files uploaded successfully!"
+        return jsonify({"message": "Files uploaded successfully!"})
     
     return render_template('upload.html')
+
+@app.route('/progress', methods=['GET'])
+def progress():
+    return jsonify({"progress": 50})  # Mock progress percentage
 
 @app.route('/admin', methods=['GET'])
 def admin():
@@ -124,4 +121,4 @@ def delete_submission(submission_id):
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='172.31.172.7', debug=True)
